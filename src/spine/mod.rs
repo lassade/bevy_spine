@@ -1,4 +1,7 @@
 //! Forked from crate `spine-data = "0.2.2"`
+//!
+//! Spine format documentation for (json)[http://pt.esotericsoftware.com/spine-json-format/]
+//! and (binary)[http://pt.esotericsoftware.com/spine-binary-format]
 
 use std::io::Read;
 
