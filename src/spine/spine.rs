@@ -1,18 +1,18 @@
-use std::collections::HashMap;
+use std::{collections::HashMap};
 use std::default::Default;
 use std::io::{BufReader, Read};
 
-use failure::Error;
+use anyhow::Error;
 use serde::{Deserialize, Serialize};
 use serde_json::from_reader;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
 pub struct Spine {
     pub slots: Vec<Slot>,
     pub skeleton: Skeleton,
     pub animations: HashMap<String, Animation>,
-    pub skins: HashMap<String, HashMap<String, HashMap<String, SkinAttachment>>>,
+    pub skins: Vec<Skin>,
     pub bones: Vec<Bone>,
     #[serde(default)]
     pub transform: Vec<TransformConstraints>,
@@ -31,40 +31,45 @@ impl Spine {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
 pub struct Skeleton {
     pub hash: Option<String>,
     pub spine: String,
-    pub width: Option<f64>,
-    pub height: Option<f64>,
+    #[serde(default)]
+    pub x: f32,
+    #[serde(default)]
+    pub y: f32,
+    pub width: f32,
+    pub height: f32,
     #[serde(default = "default_fps")]
-    pub fps: u64,
+    pub fps: u32,
     pub images: String,
+    pub audio: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
 pub struct Bone {
     pub name: String,
     pub parent: Option<String>,
     #[serde(default)]
-    pub length: i64,
+    pub length: f32,
     #[serde(default)]
     pub transform: InheritTransform,
     #[serde(default)]
-    pub x: f64,
+    pub x: f32,
     #[serde(default)]
-    pub y: f64,
+    pub y: f32,
     #[serde(default)]
-    pub rotation: f64,
-    #[serde(default = "one_f64")]
-    pub scale_y: f64,
-    #[serde(default = "one_f64")]
-    pub scale_x: f64,
+    pub rotation: f32,
+    #[serde(default = "one_f32")]
+    pub scale_y: f32,
+    #[serde(default = "one_f32")]
+    pub scale_x: f32,
     #[serde(default)]
-    pub shear_x: f64,
+    pub shear_x: f32,
     #[serde(default)]
-    pub shear_y: f64,
+    pub shear_y: f32,
     #[serde(default = "yes")]
     pub inherit_scale: bool,
     #[serde(default = "yes")]
@@ -74,7 +79,7 @@ pub struct Bone {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
 pub struct Slot {
     pub name: String,
     pub bone: String,
@@ -86,7 +91,7 @@ pub struct Slot {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
 pub enum SlotBlend {
     Normal,
     Additive,
@@ -94,39 +99,40 @@ pub enum SlotBlend {
     Screen,
 }
 
-fn default_fps() -> u64 {
+fn default_fps() -> u32 {
     30
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
 pub struct TransformConstraints {
     pub name: String,
-    pub order: u64,
-    pub bone: String,
+    #[serde(default)]
+    pub order: u32,
+    pub bones: Vec<String>,
     pub target: String,
     #[serde(default)]
-    pub rotation: f64,
+    pub rotation: f32,
     #[serde(default)]
-    pub x: f64,
+    pub x: f32,
     #[serde(default)]
-    pub scale_y: f64,
+    pub scale_y: f32,
     #[serde(default)]
-    pub scale_x: f64,
+    pub scale_x: f32,
     #[serde(default)]
-    pub shear_x: f64,
+    pub shear_x: f32,
     #[serde(default)]
-    pub shear_y: f64,
+    pub shear_y: f32,
     #[serde(default)]
-    pub y: f64,
-    #[serde(default = "one_f64")]
-    pub rotate_mix: f64,
-    #[serde(default = "one_f64")]
-    pub translate_mix: f64,
-    #[serde(default = "one_f64")]
-    pub scale_mix: f64,
-    #[serde(default = "one_f64")]
-    pub shear_mix: f64,
+    pub y: f32,
+    #[serde(default = "one_f32")]
+    pub rotate_mix: f32,
+    #[serde(default = "one_f32")]
+    pub translate_mix: f32,
+    #[serde(default = "one_f32")]
+    pub scale_mix: f32,
+    #[serde(default = "one_f32")]
+    pub shear_mix: f32,
     #[serde(default)]
     pub local: bool,
     #[serde(default)]
@@ -134,10 +140,10 @@ pub struct TransformConstraints {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
 pub struct PathConstraints {
     pub name: String,
-    pub order: u64,
+    pub order: u32,
     pub bones: Vec<String>,
     pub target: String,
     #[serde(default)]
@@ -145,15 +151,15 @@ pub struct PathConstraints {
     #[serde(default)]
     pub spacing_mode: SpacingMode,
     #[serde(default)]
-    pub rotation: f64,
+    pub rotation: f32,
     #[serde(default)]
-    pub position: f64,
+    pub position: f32,
     #[serde(default)]
-    pub spacing: f64,
-    #[serde(default = "one_f64")]
-    pub rotate_mix: f64,
-    #[serde(default = "one_f64")]
-    pub translate_mix: f64,
+    pub spacing: f32,
+    #[serde(default = "one_f32")]
+    pub rotate_mix: f32,
+    #[serde(default = "one_f32")]
+    pub translate_mix: f32,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -183,99 +189,98 @@ impl Default for SpacingMode {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
+#[derive(Default, Serialize, Deserialize, Clone, Debug)]
+#[serde(default, deny_unknown_fields, rename_all = "camelCase")]
 pub struct Animation {
-    #[serde(default)]
     pub slots: HashMap<String, AnimationSlot>,
-    #[serde(default)]
     pub bones: HashMap<String, AnimationBone>,
-    #[serde(default)]
-    pub transform: HashMap<String, AnimationTransform>,
-    #[serde(default)]
-    pub deform: HashMap<String, HashMap<String, HashMap<String, AnimationTransform>>>,
+    pub transform: HashMap<String, Vec<AnimationTransform>>,
+    pub deform: HashMap<String, HashMap<String, HashMap<String, Vec<AnimationDeform>>>>,
+    pub draw_order: Vec<AnimationDrawOrder>,
+    pub events: Vec<AnimationEvent>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
+#[derive(Default, Serialize, Deserialize, Clone, Debug)]
+#[serde(default,  rename_all = "camelCase")]
 pub struct AnimationSlot {
     pub attachment: Vec<AttachmentKeyframe>,
     pub color: Vec<ColorKeyframe>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
+#[derive(Default, Serialize, Deserialize, Clone, Debug)]
+#[serde(default, rename_all = "camelCase")]
 pub struct AttachmentKeyframe {
-    pub time: f64,
-    pub name: String,
-    pub curve: Option<String>,
+    pub time: f32,
+    pub name: Option<String>,
+    // #[serde(default, flatten, with = "keyframe_interpolation")]
+    // pub curve: Interpolation,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
+#[derive(Default, Serialize, Deserialize, Clone, Debug)]
+#[serde(default, rename_all = "camelCase")]
 pub struct ColorKeyframe {
-    pub time: f64,
+    pub time: f32,
     pub color: String,
-    #[serde(default)]
+    #[serde(flatten, with = "keyframe_interpolation")]
     pub curve: Interpolation,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
+#[derive(Default, Serialize, Deserialize, Clone, Debug)]
+#[serde(default, deny_unknown_fields, rename_all = "camelCase")]
 pub struct AnimationBone {
-    #[serde(default)]
     pub scale: Vec<ScaleKeyframe>,
-    #[serde(default)]
     pub rotate: Vec<RotateKeyframe>,
-    #[serde(default)]
     pub translate: Vec<TranslateKeyframe>,
-    #[serde(default)]
     pub shear: Vec<ShearKeyframe>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
+#[serde(default, rename_all = "camelCase")]
 pub struct ScaleKeyframe {
-    pub time: f64,
-    #[serde(default = "one_f64")]
-    pub y: f64,
-    #[serde(default = "one_f64")]
-    pub x: f64,
-    #[serde(default)]
+    pub time: f32,
+    pub y: f32,
+    pub x: f32,
+    #[serde(flatten, with = "keyframe_interpolation")]
     pub curve: Interpolation,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
+impl Default for ScaleKeyframe {
+    fn default() -> Self {
+        Self {
+            time: 0.0,
+            y: 1.0,
+            x: 1.0,
+            curve: Default::default(),
+        }
+    }
+}
+
+#[derive(Default, Serialize, Deserialize, Clone, Debug)]
+#[serde(default, rename_all = "camelCase")]
 pub struct RotateKeyframe {
-    pub time: f64,
-    #[serde(default)]
-    pub angle: f64,
-    #[serde(default)]
+    pub time: f32,
+    pub angle: f32,
+    #[serde(flatten, with = "keyframe_interpolation")]
     pub curve: Interpolation,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
+#[derive(Default, Serialize, Deserialize, Clone, Debug)]
+#[serde(default, rename_all = "camelCase")]
 pub struct TranslateKeyframe {
-    pub time: f64,
-    #[serde(default)]
-    pub x: f64,
-    #[serde(default)]
-    pub y: f64,
-    #[serde(default)]
+    pub time: f32,
+    pub x: f32,
+    pub y: f32,
+    #[serde(flatten, with = "keyframe_interpolation")]
     pub curve: Interpolation,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
+#[derive(Default, Serialize, Deserialize, Clone, Debug)]
+#[serde(default, rename_all = "camelCase")]
 pub struct ShearKeyframe {
-    pub time: f64,
-    #[serde(default)]
-    pub x: f64,
-    #[serde(default)]
-    pub y: f64,
-    #[serde(default)]
+    pub time: f32,
+    pub x: f32,
+    pub y: f32,
+    #[serde(flatten, with = "keyframe_interpolation")]
     pub curve: Interpolation,
 }
 
@@ -284,7 +289,7 @@ pub struct ShearKeyframe {
 pub enum Interpolation {
     Linear,
     Stepped,
-    BezierCurve([f64; 4]),
+    BezierCurve([f32; 4]),
 }
 
 impl Default for Interpolation {
@@ -293,87 +298,235 @@ impl Default for Interpolation {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct AnimationTransform {
-    pub time: f64,
-    #[serde(default = "one_f64")]
-    pub rotate_mix: f64,
-    #[serde(default = "one_f64")]
-    pub translate_mix: f64,
-    #[serde(default = "one_f64")]
-    pub scale_mix: f64,
-    #[serde(default = "one_f64")]
-    pub shear_mix: f64,
+mod keyframe_interpolation {
+    use std::fmt;
+
+    use super::*;
+    use serde::{
+        self,
+        de::{Error, MapAccess, Visitor},
+        ser::SerializeMap,
+        Deserializer, Serializer,
+    };
+
+    pub fn serialize<S>(interpolation: &Interpolation, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match interpolation {
+            // Should be skipped
+            Interpolation::Linear => unreachable!(),
+            Interpolation::Stepped => {
+                let mut map = serializer.serialize_map(Some(1))?;
+                map.serialize_entry("curve", "stepped")?;
+                map.end()
+            }
+            Interpolation::BezierCurve(p) => {
+                let mut map = serializer.serialize_map(Some(1))?;
+                map.serialize_entry("curve", &p[0])?;
+                map.serialize_entry("c2", &p[1])?;
+                map.serialize_entry("c3", &p[2])?;
+                map.serialize_entry("c4", &p[3])?;
+                map.end()
+            }
+        }
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Interpolation, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct InterpolationVisitor;
+
+        impl<'de> Visitor<'de> for InterpolationVisitor {
+            type Value = Interpolation;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("not a valid format interpolation format")
+            }
+
+            #[allow(unused_assignments)]
+            fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+            where
+                A: MapAccess<'de>,
+            {
+                let mut kind = 0;
+                let mut curve = [0.0, 0.0, 1.0, 1.0];
+
+                while let Some(name) = map.next_key::<String>()? {
+                    match name.as_str() {
+                        "curve" => match map.next_value::<serde_json::Value>()? {
+                            serde_json::Value::Number(n) => {
+                                curve[0] = n.as_f64().unwrap_or(0.0) as f32;
+                                kind = 2;
+                            }
+                            serde_json::Value::String(s) => {
+                                if s == "stepped" {
+                                    kind = 1;
+                                } else {
+                                    Err(A::Error::custom(format!(
+                                        "invalid curve type \"{}\", expected: \"stepped\"",
+                                        s
+                                    )))?
+                                }
+                            }
+                            v => 
+                            Err(A::Error::custom(format!(
+                                "invalid curve format \"{:?}\", expected: `Value::String` or `Value::Number`",
+                                v
+                            )))?,
+                        },
+                        "c2" => curve[1] = map.next_value()?,
+                        "c3" => curve[2] = map.next_value()?,
+                        "c4" => curve[3] = map.next_value()?,
+                        k => Err(A::Error::unknown_field(k, &["curve", "c2", "c3", "c4"]))?,
+                    }
+                }
+
+                match kind {
+                    0 => Ok(Interpolation::Linear),
+                    1 => Ok(Interpolation::Stepped),
+                    2 => Ok(Interpolation::BezierCurve(curve)),
+                    _ => unreachable!(),
+                }
+            }
+        }
+
+        deserializer.deserialize_map(InterpolationVisitor)
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
+#[serde(default, rename_all = "camelCase")]
+pub struct AnimationTransform {
+    pub time: f32,
+    pub rotate_mix: f32,
+    pub translate_mix: f32,
+    pub scale_mix: f32,
+    pub shear_mix: f32,
+    #[serde(flatten, with = "keyframe_interpolation")]
+    pub curve: Interpolation,
+}
+
+impl Default for AnimationTransform {
+    fn default() -> Self {
+        Self {
+            time: 0.0,
+            rotate_mix: 1.0,
+            translate_mix: 10.,
+            scale_mix: 1.0,
+            shear_mix: 1.0,
+            curve: Default::default(),
+        }
+    }
+}
+
+#[derive(Default, Serialize, Deserialize, Clone, Debug)]
+#[serde(default, rename_all = "camelCase")]
 pub struct AnimationDeform {
-    pub time: f64,
-    pub vertices: Vec<f64>,
-    #[serde(default)]
-    pub offset: u64,
-    #[serde(default)]
+    pub time: f32,
+    pub vertices: Vec<f32>,
+    pub offset: i32,
+    #[serde(flatten, with = "keyframe_interpolation")]
     pub curve: Interpolation,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
 pub struct AnimationDrawOrder {
-    pub time: f64,
+    pub time: f32,
     #[serde(default)]
     pub offsets: Vec<DrawOrderOffset>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
 pub struct DrawOrderOffset {
     pub slot: String,
-    pub offset: u64,
+    pub offset: i32,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(untagged)]
+#[serde(default, deny_unknown_fields, rename_all = "camelCase")]
+pub struct AnimationEvent {
+    pub name: Option<String>,
+    pub time: f32,
+    pub int: isize,
+    pub float: f32,
+    pub string: Option<String>,
+    pub audio: Option<String>,
+    pub volume: f32,
+    pub balance: f32,
+}
+
+impl Default for AnimationEvent {
+    fn default() -> Self {
+        Self {
+            name: None,
+            time: 0.0,
+            int: 0,
+            float: 0.0,
+            string: None,
+            audio: None,
+            volume: 1.0,
+            balance: 0.0,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
+pub struct Skin {
+    pub name: String,
+    #[serde(default)]
+    pub bones: Vec<String>,
+    #[serde(default)]
+    pub ik: Vec<String>,
+    #[serde(default)]
+    pub transform: Vec<String>,
+    #[serde(default)]
+    pub path: Vec<String>,
+    #[serde(default)]
+    pub attachments: HashMap<String, HashMap<String, SkinAttachment>>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(untagged, rename_all = "camelCase")]
 pub enum SkinAttachment {
+    // "tag" is omitted 
     #[serde(rename_all = "camelCase")]
     Region {
-        name: String,
-        #[serde(rename = "type")]
-        kind: Option<String>,
         path: Option<String>,
         #[serde(default)]
-        x: f64,
+        x: f32,
         #[serde(default)]
-        y: f64,
-        #[serde(default = "one_f64")]
-        scale_x: f64,
-        #[serde(default = "one_f64")]
-        scale_y: f64,
+        y: f32,
+        #[serde(default = "one_f32")]
+        scale_x: f32,
+        #[serde(default = "one_f32")]
+        scale_y: f32,
         #[serde(default)]
-        rotation: f64,
+        rotation: f32,
         #[serde(default)]
-        width: u64,
+        width: u32,
         #[serde(default)]
-        height: u64,
+        height: u32,
         #[serde(default = "white_color")]
         color: String,
     },
+    // "tag": "mesh"
     #[serde(rename_all = "camelCase")]
     Mesh {
-        #[serde(rename = "type")]
-        kind: String,
-        name: String,
         path: Option<String>,
-        uvs: Vec<[u64; 2]>,
-        triangles: Vec<u64>,
-        vertices: Vec<[u64; 2]>,
-        hull: u64,
-        edges: Option<Vec<[u64; 2]>>,
+        uvs: Vec<f32>,
+        triangles: Vec<u32>,
+        vertices: Vec<f32>,
+        hull: u32,
+        edges: Option<Vec<u32>>,
         #[serde(default = "white_color")]
         color: String,
-        width: Option<u64>,
-        height: Option<u64>,
+        width: Option<u32>,
+        height: Option<u32>,
     },
     // TODO: implement other variants
 }
@@ -395,17 +548,17 @@ impl Default for InheritTransform {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
 pub struct Event {
     #[serde(default)]
     int: i64,
     #[serde(default)]
-    float: f64,
+    float: f32,
     #[serde(default)]
     string: Option<String>,
 }
 
-fn one_f64() -> f64 {
+fn one_f32() -> f32 {
     1.0
 }
 
@@ -420,16 +573,3 @@ fn bone_default_color() -> String {
 fn white_color() -> String {
     "FFFFFFFF".to_owned()
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//     use serde_json::from_slice;
-
-//     #[test]
-//     fn test_serialize() {
-//         let file = include_bytes!("../Cowbot/Cowbot.json");
-
-//         from_slice::<Spine>(file).expect("Failed to parse Spine file");
-//     }
-// }

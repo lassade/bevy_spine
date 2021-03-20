@@ -5,8 +5,8 @@
 
 use std::io::Read;
 
+use anyhow::Error;
 use atlas::Atlas;
-use failure::Error;
 use spine::Spine;
 
 pub mod atlas;
@@ -31,13 +31,47 @@ impl SpineProject {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::fs::File;
+
+    use super::*;
+    use anyhow::{Context, Error};
+    use walkdir::WalkDir;
 
     #[test]
     fn test_load_spine_project() {
-        let json = File::open("Cowbot/Cowbot.json").expect("Could not open JSON file");
-        let atlas = File::open("Cowbot/Cowbot_tex.atlas").expect("Could not open Atlas file");
-        SpineProject::parse(json, atlas).unwrap();
+        for e in WalkDir::new("assets/").min_depth(1).max_depth(1) {
+            if let Ok(e) = e {
+                // Only directories
+                if e.metadata().unwrap().is_file() {
+                    continue;
+                }
+
+                let name = e.file_name().to_str().unwrap();
+
+                let path = format!("assets/{0}/{0}.atlas", name);
+                let _ = File::open(&path)
+                    .map_err(Error::from)
+                    .and_then(|file| Atlas::parse(file))
+                    .with_context(|| format!("atlas file \"{}\"", &path))
+                    .unwrap();
+
+                for e in WalkDir::new(format!("assets/{}/", name)).max_depth(1) {
+                    if let Ok(e) = e {
+                        if e.metadata().unwrap().is_dir() {
+                            continue;
+                        }
+
+                        if e.path().extension().map_or("", |os| os.to_str().unwrap()) == "json" {
+                            let path = e.path().to_str().unwrap();
+                            let _ = File::open(&path)
+                                .map_err(Error::from)
+                                .and_then(|file| Spine::parse(file))
+                                .with_context(|| format!("spine file \"{}\"", &path))
+                                .unwrap();
+                        }
+                    }
+                }
+            }
+        }
     }
 }

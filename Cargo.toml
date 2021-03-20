@@ -3,12 +3,18 @@ name = "bevy_spine"
 version = "0.1.0"
 authors = ["Felipe Jorge <felipe.jorge.pereira@gmail.com>"]
 edition = "2018"
+exclude = [
+    "./assets/**"
+]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-zip = "0.5.11"
+zip = "0.5.11" # TODO: Remove?!
 serde = { version = "^1.0", features = ["derive"] }
 serde_json = "^1.0"
-failure = "0.1.1"
 nom  = "^3.2"
+anyhow = "1.0.39"
+
+[dev-dependencies]
+walkdir = "2.3.1"

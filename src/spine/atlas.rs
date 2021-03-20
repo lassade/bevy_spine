@@ -1,6 +1,6 @@
 use std::io::{BufReader, Read};
 
-use failure::Error;
+use anyhow::Error;
 use nom::*;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
