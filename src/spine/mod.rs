@@ -18,7 +18,7 @@ mod tests {
     use walkdir::WalkDir;
 
     #[test]
-    fn test_load_spine_project() {
+    fn test_load_all_spine_examples() {
         for e in WalkDir::new("assets/").min_depth(1).max_depth(1) {
             if let Ok(e) = e {
                 // Only directories
