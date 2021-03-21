@@ -17,7 +17,9 @@ pub struct Spine {
     #[serde(default)]
     pub transform: Vec<TransformConstraints>,
     #[serde(default)]
-    pub ik: Vec<()>,
+    pub ik: Vec<IkConstraints>,
+    #[serde(default)]
+    pub path: Vec<PathConstraints>,
     #[serde(default)]
     pub events: HashMap<String, Event>,
 }
@@ -56,6 +58,8 @@ pub struct Bone {
     pub length: f32,
     #[serde(default)]
     pub transform: InheritTransform,
+    #[serde(default)]
+    pub skin: bool,
     #[serde(default)]
     pub x: f32,
     #[serde(default)]
@@ -109,6 +113,8 @@ pub struct TransformConstraints {
     pub name: String,
     #[serde(default)]
     pub order: u32,
+    #[serde(default)]
+    pub skin: bool,
     pub bones: Vec<String>,
     pub target: String,
     #[serde(default)]
@@ -143,13 +149,18 @@ pub struct TransformConstraints {
 #[serde(deny_unknown_fields, rename_all = "camelCase")]
 pub struct PathConstraints {
     pub name: String,
-    pub order: u32,
+    #[serde(default)]
+    pub order: usize,
+    #[serde(default)]
+    pub skin: bool,
     pub bones: Vec<String>,
     pub target: String,
     #[serde(default)]
     pub position_mode: PositionMode,
     #[serde(default)]
     pub spacing_mode: SpacingMode,
+    #[serde(default)]
+    pub rotate_mode: RotateMode,
     #[serde(default)]
     pub rotation: f32,
     #[serde(default)]
@@ -189,31 +200,46 @@ impl Default for SpacingMode {
     }
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub enum RotateMode {
+    Tangent,
+    Chain,
+    ChainScale,
+}
+
+impl Default for RotateMode {
+    fn default() -> Self {
+        RotateMode::Tangent
+    }
+}
+
 #[derive(Default, Serialize, Deserialize, Clone, Debug)]
 #[serde(default, deny_unknown_fields, rename_all = "camelCase")]
 pub struct Animation {
     pub slots: HashMap<String, AnimationSlot>,
     pub bones: HashMap<String, AnimationBone>,
+    pub ik: HashMap<String, Vec<AnimationIk>>,
     pub transform: HashMap<String, Vec<AnimationTransform>>,
+    pub path: HashMap<String, AnimationPath>,
     pub deform: HashMap<String, HashMap<String, HashMap<String, Vec<AnimationDeform>>>>,
     pub draw_order: Vec<AnimationDrawOrder>,
     pub events: Vec<AnimationEvent>,
 }
 
 #[derive(Default, Serialize, Deserialize, Clone, Debug)]
-#[serde(default,  rename_all = "camelCase")]
+#[serde(default, deny_unknown_fields,  rename_all = "camelCase")]
 pub struct AnimationSlot {
     pub attachment: Vec<AttachmentKeyframe>,
     pub color: Vec<ColorKeyframe>,
+    pub two_color: Vec<TwoColorKeyframe>,
 }
 
 #[derive(Default, Serialize, Deserialize, Clone, Debug)]
-#[serde(default, rename_all = "camelCase")]
+#[serde(default, deny_unknown_fields, rename_all = "camelCase")]
 pub struct AttachmentKeyframe {
     pub time: f32,
     pub name: Option<String>,
-    // #[serde(default, flatten, with = "keyframe_interpolation")]
-    // pub curve: Interpolation,
 }
 
 #[derive(Default, Serialize, Deserialize, Clone, Debug)]
@@ -221,6 +247,15 @@ pub struct AttachmentKeyframe {
 pub struct ColorKeyframe {
     pub time: f32,
     pub color: String,
+    #[serde(flatten, with = "keyframe_interpolation")]
+    pub curve: Interpolation,
+}
+#[derive(Default, Serialize, Deserialize, Clone, Debug)]
+#[serde(default, rename_all = "camelCase")]
+pub struct TwoColorKeyframe {
+    pub time: f32,
+    pub light: String,
+    pub dark: String,
     #[serde(flatten, with = "keyframe_interpolation")]
     pub curve: Interpolation,
 }
@@ -398,6 +433,36 @@ mod keyframe_interpolation {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(default, rename_all = "camelCase")]
+pub struct AnimationIk {
+    /// The time in seconds for the keyframe.
+    pub time: f32,
+    /// The IK constraint mix for the keyframe. Assume 1 if omitted.
+    pub mix: f32,
+    /// A value for two bone IK, the distance from the maximum reach of the bones that rotation will slow. Assume 0 if omitted.
+    pub softness: f32,
+    /// The IK constraint bend direction for the keyframe. Assume false if omitted.
+    pub bend_positive: bool,
+    /// If true, and only a single bone is being constrained, if the target is too close, the bone is scaled to reach it. Assume false if omitted.
+    pub compress: bool,
+    /// If true, and if the target is out of range, the parent bone is scaled to reach it. If more than one bone is being constrained and the parent bone has local nonuniform scale, stretch is not applied. Assume false if omitted.
+    pub stretch: bool,
+}
+
+impl Default for AnimationIk {
+    fn default() -> Self {
+        Self {
+            time: 0.0,
+            mix: 1.0,
+            softness: 0.0,
+            bend_positive: false,
+            compress: false,
+            stretch: false,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(default, rename_all = "camelCase")]
 pub struct AnimationTransform {
     pub time: f32,
     pub rotate_mix: f32,
@@ -413,9 +478,76 @@ impl Default for AnimationTransform {
         Self {
             time: 0.0,
             rotate_mix: 1.0,
-            translate_mix: 10.,
+            translate_mix: 1.0,
             scale_mix: 1.0,
             shear_mix: 1.0,
+            curve: Default::default(),
+        }
+    }
+}
+
+#[derive(Default, Serialize, Deserialize, Clone, Debug)]
+#[serde(default, deny_unknown_fields, rename_all = "camelCase")]
+pub struct AnimationPath {
+    pub position: Vec<PathPositionKeyframe>,
+    pub spacing: Vec<PathSpacingKeyframe>,
+    pub mix: Vec<PathMixKeyframe>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(default, rename_all = "camelCase")]
+pub struct PathPositionKeyframe {
+    pub time: f32,
+    pub position: f32,
+    #[serde(flatten, with = "keyframe_interpolation")]
+    pub curve: Interpolation,
+}
+
+impl Default for PathPositionKeyframe {
+    fn default() -> Self {
+        Self {
+            time: 0.0,
+            position: 1.0,
+            curve: Default::default(),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(default, rename_all = "camelCase")]
+pub struct PathSpacingKeyframe {
+    pub time: f32,
+    pub spacing: f32,
+    #[serde(flatten, with = "keyframe_interpolation")]
+    pub curve: Interpolation,
+}
+
+impl Default for PathSpacingKeyframe {
+    fn default() -> Self {
+        Self {
+            time: 0.0,
+            spacing: 1.0,
+            curve: Default::default(),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(default, rename_all = "camelCase")]
+pub struct PathMixKeyframe {
+    pub time: f32,
+    pub rotate_mix: f32,
+    pub translate_mix: f32,
+    #[serde(flatten, with = "keyframe_interpolation")]
+    pub curve: Interpolation,
+}
+
+impl Default for PathMixKeyframe {
+    fn default() -> Self {
+        Self {
+            time: 0.0,
+            rotate_mix: 1.0,
+            translate_mix: 1.0,
             curve: Default::default(),
         }
     }
@@ -545,6 +677,25 @@ impl Default for InheritTransform {
     fn default() -> Self {
         InheritTransform::Normal
     }
+}
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
+pub struct IkConstraints {
+    pub name: String,
+    #[serde(default)]
+    pub order: usize,
+    pub bones: Vec<String>,
+    pub target: String,
+    #[serde(default = "one_f32")]
+    pub mix: f32,
+    #[serde(default)]
+    pub bend_positive: bool,
+    #[serde(default)]
+    pub compress: bool,
+    #[serde(default)]
+    pub stretch: bool,
+    #[serde(default)]
+    pub uniform: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

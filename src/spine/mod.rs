@@ -3,31 +3,11 @@
 //! Spine format documentation for (json)[http://pt.esotericsoftware.com/spine-json-format/]
 //! and (binary)[http://pt.esotericsoftware.com/spine-binary-format]
 
-use std::io::Read;
-
-use anyhow::Error;
-use atlas::Atlas;
-use spine::Spine;
-
 pub mod atlas;
 pub mod spine;
 
-pub struct SpineProject {
-    pub spine: Spine,
-    pub atlas: Atlas,
-}
-
-impl SpineProject {
-    pub fn parse<S: Read, A: Read>(
-        spine_reader: S,
-        atlas_reader: A,
-    ) -> Result<SpineProject, Error> {
-        let spine = Spine::parse(spine_reader)?;
-        let atlas = Atlas::parse(atlas_reader)?;
-
-        Ok(SpineProject { spine, atlas })
-    }
-}
+pub use atlas::Atlas;
+pub use spine::Spine;
 
 #[cfg(test)]
 mod tests {
@@ -48,12 +28,13 @@ mod tests {
 
                 let name = e.file_name().to_str().unwrap();
 
+                // Not every spine file have an atlas
                 let path = format!("assets/{0}/{0}.atlas", name);
-                let _ = File::open(&path)
-                    .map_err(Error::from)
-                    .and_then(|file| Atlas::parse(file))
-                    .with_context(|| format!("atlas file \"{}\"", &path))
-                    .unwrap();
+                if let Ok(file) = File::open(&path) {
+                    Atlas::parse(file)
+                        .with_context(|| format!("atlas file \"{}\"", &path))
+                        .unwrap();
+                }
 
                 for e in WalkDir::new(format!("assets/{}/", name)).max_depth(1) {
                     if let Ok(e) = e {
