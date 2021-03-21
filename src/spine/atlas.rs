@@ -1,6 +1,7 @@
 use std::io::{BufReader, Read};
 
 use anyhow::Error;
+use bevy::math::Vec2;
 use nom::*;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -60,10 +61,16 @@ pub enum Repeat {
     No,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Copy)]
 pub struct Size {
     pub width: u64,
     pub height: u64,
+}
+
+impl Into<Vec2> for Size {
+    fn into(self) -> Vec2 {
+        Vec2::new(self.width as f32, self.height as f32)
+    }
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -79,7 +86,7 @@ pub struct Region {
     pub pad: Option<Pad>,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Copy)]
 pub struct Split {
     pub left: u64,
     pub right: u64,
@@ -87,7 +94,7 @@ pub struct Split {
     pub bottom: u64,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Copy)]
 pub struct Pad {
     pub left: i64,
     pub right: i64,
@@ -95,10 +102,16 @@ pub struct Pad {
     pub bottom: i64,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Copy)]
 pub struct Point {
     pub x: i64,
     pub y: i64,
+}
+
+impl Into<Vec2> for Point {
+    fn into(self) -> Vec2 {
+        Vec2::new(self.x as f32, self.y as f32)
+    }
 }
 
 mod parser {

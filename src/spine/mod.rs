@@ -31,7 +31,7 @@ mod tests {
                 // Not every spine file have an atlas
                 let path = format!("assets/{0}/{0}.atlas", name);
                 if let Ok(file) = File::open(&path) {
-                    Atlas::parse(file)
+                    let _ = Atlas::parse(file)
                         .with_context(|| format!("atlas file \"{}\"", &path))
                         .unwrap();
                 }
