@@ -61,15 +61,18 @@ impl Default for SpriteShape {
     }
 }
 
-#[derive(Default, Debug, RenderResources, TypeUuid, ShaderDefs)]
+#[derive(Default, Debug, RenderResources, TypeUuid, ShaderDefs, Reflect)]
 #[uuid = "8d3d1fed-e9e0-4695-96bd-75d2143cc376"]
 pub struct Sprite {
-    #[shader_def]
-    pub texture: Option<Handle<Texture>>,
     pub color_base: Color,
+    #[shader_def]
+    #[reflect(ignore)]
+    pub texture: Option<Handle<Texture>>,
+    #[reflect(ignore)]
     #[render_resources(ignore)]
     shape: SpriteShape,
     // ? NOTE: Create once and don't change, entities won't be able to update
+    #[reflect(ignore)]
     #[render_resources(ignore)]
     mesh: Option<Handle<Mesh>>,
 }
@@ -77,8 +80,8 @@ pub struct Sprite {
 impl Sprite {
     pub fn with_shape(texture: Option<Handle<Texture>>, shape: SpriteShape) -> Self {
         Self {
-            texture,
             color_base: Default::default(),
+            texture,
             shape,
             mesh: None,
         }
@@ -269,7 +272,6 @@ pub(crate) fn rebuild_modified_sprite_system(
             // will cause the sprite to be updated every frame
             let sprite = unsafe { &mut *(sprite as *const _ as *mut _) };
             rebuild_mesh(sprite, meshes);
-            dbg!("changed");
         }
     }
 }
@@ -283,12 +285,10 @@ pub(crate) fn update_sprite_system(
     for (mut mesh_handle, sprite_handle) in query.iter_mut() {
         if let Some(sprite) = sprites.get(sprite_handle) {
             *mesh_handle = if let Some(mesh) = &sprite.mesh {
-                dbg!("set");
                 mesh.clone()
             } else {
                 let sprite: &mut Sprite = sprites.get_mut(sprite_handle).unwrap();
                 rebuild_mesh(sprite, meshes);
-                dbg!("missing");
                 sprite.mesh.as_ref().unwrap().clone()
             };
         }

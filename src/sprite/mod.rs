@@ -66,7 +66,7 @@ impl Plugin for SpritePlugin {
             .add_node_edge(node::SPRITE_INSTANCE, base::node::MAIN_PASS)
             .unwrap();
 
-        render_graph.add_system_node(node::SPRITE, AssetRenderResourcesNode::<Sprite>::new(false));
+        render_graph.add_system_node(node::SPRITE, AssetRenderResourcesNode::<Sprite>::new(true));
         render_graph
             .add_node_edge(node::SPRITE, base::node::MAIN_PASS)
             .unwrap();
