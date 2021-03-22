@@ -10,7 +10,7 @@ exclude = [
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = { path = "../bevy" }
+bevy = { git = "https://github.com/lassade/bevy.git", branch = "animations" }
 
 zip = "0.5.11" # TODO: Remove?!
 serde = { version = "^1.0", features = ["derive"] }
