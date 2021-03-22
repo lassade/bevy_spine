@@ -1,9 +1,12 @@
+//! Format described here http://pt.esotericsoftware.com/spine-atlas-format
+
 use std::io::{BufReader, Read};
 
 use anyhow::Error;
 use bevy::math::Vec2;
 use nom::*;
 
+// TODO: Multiple page support
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Atlas {
     pub name: String,
@@ -11,6 +14,7 @@ pub struct Atlas {
     pub format: Format,
     pub filter: Filter,
     pub repeat: Repeat,
+    // TODO: pub pma: bool,
     pub regions: Vec<Region>,
 }
 

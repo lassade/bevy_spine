@@ -64,6 +64,9 @@ impl Default for SpriteShape {
 #[derive(Default, Debug, RenderResources, TypeUuid, ShaderDefs, Reflect)]
 #[uuid = "8d3d1fed-e9e0-4695-96bd-75d2143cc376"]
 pub struct Sprite {
+    /// Sprite name, for debug purposes
+    #[render_resources(ignore)]
+    pub name: Option<String>,
     pub color_base: Color,
     #[shader_def]
     #[reflect(ignore)]
@@ -80,6 +83,7 @@ pub struct Sprite {
 impl Sprite {
     pub fn with_shape(texture: Option<Handle<Texture>>, shape: SpriteShape) -> Self {
         Self {
+            name: None,
             color_base: Default::default(),
             texture,
             shape,
@@ -144,24 +148,16 @@ fn rebuild_mesh(sprite: &mut Sprite, meshes: &mut Assets<Mesh>) {
                     Rotation::None => {}
                     Rotation::CW => {
                         let temp = mesh_editable.uvs[3];
-                        for i in (1..4).rev() {
-                            // 3 <- 2
-                            // 2 <- 1
-                            // 1 <- 0
-                            mesh_editable.uvs[i] = mesh_editable.uvs[i - 1];
-                        }
-                        // 0 <- 3*
+                        mesh_editable.uvs[3] = mesh_editable.uvs[2];
+                        mesh_editable.uvs[2] = mesh_editable.uvs[1];
+                        mesh_editable.uvs[1] = mesh_editable.uvs[0];
                         mesh_editable.uvs[0] = temp;
                     }
                     Rotation::CCW => {
                         let temp = mesh_editable.uvs[0];
-                        for i in 0..3 {
-                            // 0 <- 1
-                            // 1 <- 2
-                            // 2 <- 3
-                            mesh_editable.uvs[i] = mesh_editable.uvs[i + 1];
-                        }
-                        // 3 <- 0*
+                        mesh_editable.uvs[0] = mesh_editable.uvs[1];
+                        mesh_editable.uvs[1] = mesh_editable.uvs[2];
+                        mesh_editable.uvs[2] = mesh_editable.uvs[3];
                         mesh_editable.uvs[3] = temp;
                     }
                 }

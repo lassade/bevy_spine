@@ -31,19 +31,25 @@ fn setup(
     let texture: Handle<Texture> = asset_server.load(format!("hero/{}", atlas.name).as_str());
 
     let atlas_sprites = &mut available_sprites.0;
+
     let mut atlas_size: Vec2 = atlas.size.into();
     atlas_size = atlas_size.recip();
 
+    // ! FIXME: 1 pixel line and row is been trimmed
     for region in &atlas.regions {
-        let size = region.size.into();
+        let size: Vec2 = region.size.into();
 
+        let texture_region_size = if region.rotate {
+            Vec2::new(size.y, size.x)
+        } else {
+            size
+        };
         let mut min: Vec2 = region.xy.into();
         min *= atlas_size;
-        let mut max: Vec2 = min + size * atlas_size;
-
+        let mut max: Vec2 = min + texture_region_size * atlas_size;
         std::mem::swap(&mut min.y, &mut max.y);
 
-        let sprite = Sprite::with_shape(
+        let mut sprite = Sprite::with_shape(
             Some(texture.clone()),
             SpriteShape::Rect {
                 min,
@@ -58,6 +64,7 @@ fn setup(
                 padding: None,
             },
         );
+        sprite.name = Some(region.name.clone());
         atlas_sprites.push(sprites.add(sprite));
     }
 
@@ -78,6 +85,7 @@ fn update(
     mut lapsed: Local<Update>,
     time: Res<Time>,
     available_sprites: Res<AvailableSprites>,
+    sprites: Res<Assets<Sprite>>,
     mut query: Query<&mut Handle<Sprite>>,
 ) {
     lapsed.time_lapsed += time.delta_seconds();
@@ -86,6 +94,12 @@ fn update(
     let n = &available_sprites.0[index];
 
     for mut sprite in query.iter_mut() {
+        // Display the sprite name when it changes
+        if &*sprite != n {
+            println!("{:?}", sprites.get(n).unwrap().name);
+        }
+
+        // Change the sprite
         *sprite = n.clone();
     }
 }
