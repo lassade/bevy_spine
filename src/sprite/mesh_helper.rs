@@ -34,8 +34,7 @@ macro_rules! mesh_index {
 }
 
 pub struct MeshEditXU<'a> {
-    pub vertices: &'a mut Vec<[f32; 3]>,
-    pub normals: &'a mut Vec<[f32; 3]>,
+    pub vertices: &'a mut Vec<[f32; 2]>,
     pub uvs: &'a mut Vec<[f32; 2]>,
     pub indices: &'a mut Vec<u32>,
     _mesh: &'a mut Mesh,
@@ -48,9 +47,8 @@ impl<'a> From<&'a mut Mesh> for MeshEditXU<'a> {
                 vertices: mesh_attr!(
                     mesh,
                     Mesh::ATTRIBUTE_POSITION,
-                    VertexAttributeValues::Float3
+                    VertexAttributeValues::Float2
                 ),
-                normals: mesh_attr!(mesh, Mesh::ATTRIBUTE_NORMAL, VertexAttributeValues::Float3),
                 uvs: mesh_attr!(mesh, Mesh::ATTRIBUTE_UV_0, VertexAttributeValues::Float2),
                 indices: mesh_index!(mesh, Indices::U32),
                 _mesh: mesh,

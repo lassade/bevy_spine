@@ -126,16 +126,14 @@ fn rebuild_mesh(sprite: &mut Sprite, meshes: &mut Assets<Mesh>) {
                 mesh_editable.uvs[2] = [max.x, max.y];
                 mesh_editable.uvs[3] = [min.x, max.y];
 
-                mesh_editable.vertices.resize(4, [0.0; 3]);
+                mesh_editable.vertices.resize(4, [0.0; 2]);
                 let center = *size * *pivot;
                 let min = -center;
                 let max = *size - center;
-                mesh_editable.vertices[0] = [min.x, min.y, 0.0];
-                mesh_editable.vertices[1] = [max.x, min.y, 0.0];
-                mesh_editable.vertices[2] = [max.x, max.y, 0.0];
-                mesh_editable.vertices[3] = [min.x, max.y, 0.0];
-
-                mesh_editable.normals.resize(4, [0.0, 0.0, 1.0]);
+                mesh_editable.vertices[0] = [min.x, min.y];
+                mesh_editable.vertices[1] = [max.x, min.y];
+                mesh_editable.vertices[2] = [max.x, max.y];
+                mesh_editable.vertices[3] = [min.x, max.y];
 
                 mesh_editable.indices.clear();
                 mesh_editable
