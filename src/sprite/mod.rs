@@ -33,6 +33,7 @@ pub struct SpritePlugin;
 
 impl Plugin for SpritePlugin {
     fn build(&self, app: &mut AppBuilder) {
+        // Sprite
         app.add_asset::<Sprite>()
             .register_type::<SpriteInstance>()
             .add_stage_after(
@@ -58,6 +59,7 @@ impl Plugin for SpritePlugin {
 
         // Set the pipeline and rendering
         let mut render_graph = resources.get_mut::<RenderGraph>().unwrap();
+
         render_graph.add_system_node(
             node::SPRITE_INSTANCE,
             RenderResourcesNode::<SpriteInstance>::new(true),

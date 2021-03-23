@@ -7,13 +7,14 @@ use bevy::{
         prelude::{Draw, Visible},
         render_graph::base::MainPass,
     },
-    transform::prelude::{GlobalTransform, Transform},
+    transform::prelude::Transform,
 };
 
 use super::{
     render::SPRITE_PIPELINE_HANDLE,
     sprite::{Sprite, SpriteInstance},
 };
+use crate::transform::{GlobalMatrix, ShearTransform};
 
 #[derive(Bundle)]
 pub struct SpriteBundle {
@@ -24,8 +25,9 @@ pub struct SpriteBundle {
     pub draw: Draw,
     pub visible: Visible,
     pub render_pipelines: RenderPipelines,
+    pub shear: ShearTransform,
     pub transform: Transform,
-    pub global_transform: GlobalTransform,
+    pub global_matrix: GlobalMatrix,
 }
 
 impl Default for SpriteBundle {
@@ -43,8 +45,9 @@ impl Default for SpriteBundle {
             },
             main_pass: MainPass,
             draw: Default::default(),
+            shear: Default::default(),
             transform: Default::default(),
-            global_transform: Default::default(),
+            global_matrix: Default::default(),
         }
     }
 }

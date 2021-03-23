@@ -10,10 +10,13 @@ use bevy::{
 mod entity;
 pub mod spine;
 pub mod sprite;
+pub mod transform;
 
 use entity::*;
 use spine::Atlas;
 use sprite::{Rotation, Sprite, SpriteShape};
+
+// TODO: PluginsGroup our something like that
 
 pub struct SpineImpoter;
 

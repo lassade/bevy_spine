@@ -4,6 +4,7 @@ use bevy::prelude::*;
 use bevy_spine::{
     spine::Atlas,
     sprite::{Rotation, Sprite, SpriteBundle, SpritePlugin, SpriteShape},
+    transform::TransformMatrixPlugin,
 };
 
 #[derive(Default)]
@@ -13,6 +14,7 @@ fn main() {
     App::build()
         .add_plugins(DefaultPlugins)
         .add_plugin(SpritePlugin)
+        .add_plugin(TransformMatrixPlugin)
         .init_resource::<AvailableSprites>()
         .add_startup_system(setup.system())
         .add_system(update.system())
