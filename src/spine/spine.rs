@@ -606,19 +606,14 @@ impl Default for AnimationEvent {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(deny_unknown_fields, rename_all = "camelCase")]
+#[derive(Default, Serialize, Deserialize, Clone, Debug)]
+#[serde(default, deny_unknown_fields, rename_all = "camelCase")]
 pub struct Skin {
     pub name: String,
-    #[serde(default)]
     pub bones: Vec<String>,
-    #[serde(default)]
     pub ik: Vec<String>,
-    #[serde(default)]
     pub transform: Vec<String>,
-    #[serde(default)]
     pub path: Vec<String>,
-    #[serde(default)]
     pub attachments: HashMap<String, HashMap<String, SkinAttachment>>,
 }
 

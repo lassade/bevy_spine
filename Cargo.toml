@@ -10,7 +10,7 @@ exclude = [
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = { git = "https://github.com/lassade/bevy.git", branch = "animations" }
+bevy = { path = "../bevy" }
 
 zip = "0.5.11" # TODO: Remove?!
 serde = { version = "^1.0", features = ["derive"] }
@@ -24,3 +24,7 @@ walkdir = "2.3.1"
 [[example]]
 name = "sprite"
 path = "examples/sprite.rs"
+
+[[example]]
+name = "spine"
+path = "examples/spine.rs"

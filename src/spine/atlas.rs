@@ -71,9 +71,9 @@ pub struct Size {
     pub height: u64,
 }
 
-impl Into<Vec2> for Size {
-    fn into(self) -> Vec2 {
-        Vec2::new(self.width as f32, self.height as f32)
+impl From<Size> for Vec2 {
+    fn from(size: Size) -> Vec2 {
+        Vec2::new(size.width as f32, size.height as f32)
     }
 }
 
@@ -112,9 +112,9 @@ pub struct Point {
     pub y: i64,
 }
 
-impl Into<Vec2> for Point {
-    fn into(self) -> Vec2 {
-        Vec2::new(self.x as f32, self.y as f32)
+impl From<Point> for Vec2 {
+    fn from(point: Point) -> Vec2 {
+        Vec2::new(point.x as f32, point.y as f32)
     }
 }
 

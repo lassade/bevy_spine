@@ -38,15 +38,20 @@ fn setup(
     // ! FIXME: 1 pixel line and row is been trimmed
     for region in &atlas.regions {
         let size: Vec2 = region.size.into();
+        let mut pivot: Vec2 = region.orig.into();
+        let mut size_uv = size;
 
-        let texture_region_size = if region.rotate {
-            Vec2::new(size.y, size.x)
-        } else {
-            size
-        };
+        if region.rotate {
+            size_uv = Vec2::new(size_uv.y, size_uv.x);
+            pivot = Vec2::new(pivot.y, pivot.x);
+        }
+
+        pivot *= size_uv.recip();
+        size_uv *= atlas_size;
+
         let mut min: Vec2 = region.xy.into();
         min *= atlas_size;
-        let mut max: Vec2 = min + texture_region_size * atlas_size;
+        let mut max: Vec2 = min + size_uv;
         std::mem::swap(&mut min.y, &mut max.y);
 
         let mut sprite = Sprite::with_shape(
@@ -60,7 +65,7 @@ fn setup(
                     Rotation::None
                 },
                 size,
-                pivot: Vec2::splat(0.5),
+                pivot,
                 padding: None,
             },
         );
