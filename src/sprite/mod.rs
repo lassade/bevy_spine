@@ -1,8 +1,6 @@
 use bevy::{
-    app::prelude::*,
-    asset::{AddAsset, AssetStage, Assets, Handle},
-    ecs::{IntoSystem, StageLabel, SystemStage},
-    reflect::RegisterTypeBuilder,
+    asset::AssetStage,
+    prelude::*,
     render::{
         pipeline::PipelineDescriptor,
         render_graph::{base, AssetRenderResourcesNode, RenderGraph, RenderResourcesNode},
@@ -15,12 +13,13 @@ mod mesh_helper;
 mod render;
 mod sprite;
 
-pub use entity::*;
+// ? NOTE: SpriteBundle have the same name as the bevy_sprite
+pub use entity::{SpriteBundle, *};
 pub use render::*;
 pub use sprite::{Sprite, *};
 
 pub mod prelude {
-    pub use super::{entity::SpriteBundle, Sprite, SpriteInstance};
+    pub use super::{entity::SpriteBundleBase, Sprite, SpriteInstance};
 }
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, StageLabel)]

@@ -12,9 +12,10 @@ pub mod spine;
 pub mod sprite;
 pub mod transform;
 
-use entity::*;
+pub use entity::*;
 use spine::Atlas;
 use sprite::{Rotation, Sprite, SpriteShape};
+use transform::Transform2D;
 
 // TODO: PluginsGroup our something like that
 
@@ -113,7 +114,7 @@ impl AssetLoader for SpineImpoter {
                 // TODO: Bone InheritTransform, length, color and shear
                 for bone in &spine.bones {
                     let entity = world_builder
-                        .spawn(BoneBundle {
+                        .spawn(BoneBundle2D5 {
                             parent: Parent(
                                 bone.parent
                                     .as_ref()
@@ -122,10 +123,11 @@ impl AssetLoader for SpineImpoter {
                                     .unwrap_or_else(|| entity_root),
                             ),
                             name: Name::new(bone.name.clone()),
-                            transform: Transform {
-                                translation: Vec3::new(bone.x, bone.y, 0.0),
-                                rotation: Quat::from_rotation_z(bone.rotation),
-                                scale: Vec3::new(bone.scale_x, bone.scale_y, 1.0),
+                            transform: Transform2D {
+                                translation: Vec2::new(bone.x, bone.y),
+                                rotation: bone.rotation,
+                                scale: Vec2::new(bone.scale_x, bone.scale_y),
+                                shear: Vec2::new(bone.shear_x, bone.shear_y),
                             },
                             ..Default::default()
                         })

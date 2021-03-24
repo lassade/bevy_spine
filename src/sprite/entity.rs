@@ -1,6 +1,6 @@
 use bevy::{
     asset::Handle,
-    ecs::Bundle,
+    ecs::prelude::*,
     render::{
         mesh::Mesh,
         pipeline::{RenderPipeline, RenderPipelines},
@@ -14,10 +14,16 @@ use super::{
     render::SPRITE_PIPELINE_HANDLE,
     sprite::{Sprite, SpriteInstance},
 };
-use crate::transform::{GlobalMatrix, ShearTransform};
+use crate::transform::{LocalToWorld, LocalToWorld2D, Transform2D};
+
+pub type SpriteBundle2D = SpriteBundleBase<Transform2D, LocalToWorld2D>;
+
+pub type SpriteBundle2D5 = SpriteBundleBase<Transform2D, LocalToWorld>;
+
+pub type SpriteBundle = SpriteBundleBase<Transform, LocalToWorld>;
 
 #[derive(Bundle)]
-pub struct SpriteBundle {
+pub struct SpriteBundleBase<T: Send + Sync + 'static, M: Send + Sync + 'static> {
     pub sprite: Handle<Sprite>,
     pub sprite_instance: SpriteInstance,
     pub mesh: Handle<Mesh>,
@@ -25,12 +31,15 @@ pub struct SpriteBundle {
     pub draw: Draw,
     pub visible: Visible,
     pub render_pipelines: RenderPipelines,
-    pub shear: ShearTransform,
-    pub transform: Transform,
-    pub global_matrix: GlobalMatrix,
+    pub transform: T,
+    pub local_to_world: M,
 }
 
-impl Default for SpriteBundle {
+impl<T, M> Default for SpriteBundleBase<T, M>
+where
+    T: Default + Send + Sync + 'static,
+    M: Default + Send + Sync + 'static,
+{
     fn default() -> Self {
         Self {
             sprite: Default::default(),
@@ -45,9 +54,8 @@ impl Default for SpriteBundle {
             },
             main_pass: MainPass,
             draw: Default::default(),
-            shear: Default::default(),
             transform: Default::default(),
-            global_matrix: Default::default(),
+            local_to_world: Default::default(),
         }
     }
 }

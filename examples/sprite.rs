@@ -3,8 +3,8 @@ use std::fs::File;
 use bevy::prelude::*;
 use bevy_spine::{
     spine::Atlas,
-    sprite::{Rotation, Sprite, SpriteBundle, SpritePlugin, SpriteShape},
-    transform::TransformMatrixPlugin,
+    sprite::{Rotation, Sprite, SpriteBundle2D5, SpritePlugin, SpriteShape},
+    transform::Transform2D5Plugin,
 };
 
 #[derive(Default)]
@@ -14,7 +14,7 @@ fn main() {
     App::build()
         .add_plugins(DefaultPlugins)
         .add_plugin(SpritePlugin)
-        .add_plugin(TransformMatrixPlugin)
+        .add_plugin(Transform2D5Plugin)
         .init_resource::<AvailableSprites>()
         .add_startup_system(setup.system())
         .add_system(update.system())
@@ -77,7 +77,7 @@ fn setup(
 
     commands.spawn(OrthographicCameraBundle::new_2d());
 
-    commands.spawn(SpriteBundle {
+    commands.spawn(SpriteBundle2D5 {
         sprite: atlas_sprites[1].clone(),
         ..Default::default()
     });

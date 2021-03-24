@@ -1,29 +1,33 @@
 use bevy::prelude::*;
 
-use crate::transform::{GlobalMatrix, ShearTransform};
+use crate::transform::{LocalToWorld, LocalToWorld2D, Transform2D};
+
+pub type BoneBundle2D = BoneBundleBase<LocalToWorld2D>;
+
+pub type BoneBundle2D5 = BoneBundleBase<LocalToWorld>;
 
 #[derive(Bundle)]
-pub struct BoneBundle {
+pub struct BoneBundleBase<M: Send + Sync + 'static> {
     pub name: Name,
     pub parent: Parent,
     //pub color: Color,
     pub children: Children,
-    pub shear: ShearTransform,
-    pub transform: Transform,
-    pub global_transform_matrix: GlobalMatrix,
+    pub transform: Transform2D,
+    pub local_to_world: M,
 }
 
-impl Default for BoneBundle {
+impl<M> Default for BoneBundleBase<M>
+where
+    M: Default + Send + Sync + 'static,
+{
     fn default() -> Self {
         Self {
             name: Default::default(),
             // TODO: Not a very good solution
             parent: Parent(Entity::new(u32::MAX)),
-            //color: Default::default(),
             children: Default::default(),
-            shear: Default::default(),
             transform: Default::default(),
-            global_transform_matrix: Default::default(),
+            local_to_world: Default::default(),
         }
     }
 }
