@@ -44,10 +44,10 @@ impl Transform2D {
     #[inline]
     pub fn identity() -> Self {
         Self {
-            translation: Vec2::zero(),
+            translation: Vec2::ZERO,
             rotation: 0.0,
-            scale: Vec2::one(),
-            shear: Vec2::zero(),
+            scale: Vec2::ONE,
+            shear: Vec2::ZERO,
         }
     }
 

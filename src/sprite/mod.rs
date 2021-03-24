@@ -50,14 +50,14 @@ impl Plugin for SpritePlugin {
             )
             .add_system_to_stage(SpriteStage::Update, sprite::update_sprite_system.system());
 
-        let resources = app.resources_mut();
+        let world = app.world_mut();
 
         // Add default sprite asset
-        let mut sprites = resources.get_mut::<Assets<Sprite>>().unwrap();
+        let mut sprites = world.get_resource_mut::<Assets<Sprite>>().unwrap();
         sprites.set_untracked(Handle::<Sprite>::default(), Sprite::default());
 
         // Set the pipeline and rendering
-        let mut render_graph = resources.get_mut::<RenderGraph>().unwrap();
+        let mut render_graph = world.get_resource_mut::<RenderGraph>().unwrap();
 
         render_graph.add_system_node(
             node::SPRITE_INSTANCE,
@@ -72,8 +72,12 @@ impl Plugin for SpritePlugin {
             .add_node_edge(node::SPRITE, base::node::MAIN_PASS)
             .unwrap();
 
-        let mut pipelines = resources.get_mut::<Assets<PipelineDescriptor>>().unwrap();
-        let mut shaders = resources.get_mut::<Assets<Shader>>().unwrap();
-        pipelines.set_untracked(SPRITE_PIPELINE_HANDLE, build_sprite_pipeline(&mut shaders));
+        let mut shaders = world.get_resource_mut::<Assets<Shader>>().unwrap();
+        let pipeline = build_sprite_pipeline(&mut shaders);
+
+        let mut pipelines = world
+            .get_resource_mut::<Assets<PipelineDescriptor>>()
+            .unwrap();
+        pipelines.set_untracked(SPRITE_PIPELINE_HANDLE, pipeline);
     }
 }

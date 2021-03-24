@@ -58,10 +58,10 @@ impl Plugin for Transform2DPlugin {
                 .after(TransformSystem::ParentUpdate),
         );
 
-        let resources = app.resources_mut();
+        let world = app.world_mut();
 
         // Set the pipeline and rendering
-        let mut render_graph = resources.get_mut::<RenderGraph>().unwrap();
+        let mut render_graph = world.get_resource_mut::<RenderGraph>().unwrap();
 
         // Custom transform matrix
         render_graph.add_system_node(
@@ -146,10 +146,10 @@ impl Plugin for Transform2D5Plugin {
                 .after(Transform2D5System::PropagateTransform2D),
         );
 
-        let resources = app.resources_mut();
+        let world = app.world_mut();
 
         // Set the pipeline and rendering
-        let mut render_graph = resources.get_mut::<RenderGraph>().unwrap();
+        let mut render_graph = world.get_resource_mut::<RenderGraph>().unwrap();
 
         // Custom transform matrix
         render_graph.add_system_node(
@@ -186,10 +186,10 @@ impl Plugin for TransformPlugin {
                 .after(TransformSystem::ParentUpdate),
         );
 
-        let resources = app.resources_mut();
+        let world = app.world_mut();
 
         // Set the pipeline and rendering
-        let mut render_graph = resources.get_mut::<RenderGraph>().unwrap();
+        let mut render_graph = world.get_resource_mut::<RenderGraph>().unwrap();
 
         // Custom transform matrix
         render_graph.add_system_node(

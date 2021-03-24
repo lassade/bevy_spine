@@ -104,39 +104,39 @@ impl AssetLoader for SpineImpoter {
                 todo!("unpacked sprites")
             }
 
-            let mut world = World::default();
-            let world_builder = &mut world.build();
+            // let mut world = World::default();
+            // let world_builder = &mut world.build();
 
-            let entity_root = world_builder.spawn(()).current_entity().unwrap();
+            // let entity_root = world_builder.spawn(()).current_entity().unwrap();
 
-            world_builder.with_children(|world_builder| {
-                let mut bones_lookup: HashMap<String, Entity> = Default::default();
-                // TODO: Bone InheritTransform, length, color and shear
-                for bone in &spine.bones {
-                    let entity = world_builder
-                        .spawn(BoneBundle2D5 {
-                            parent: Parent(
-                                bone.parent
-                                    .as_ref()
-                                    .and_then(|parent_name| bones_lookup.get(parent_name))
-                                    .copied()
-                                    .unwrap_or_else(|| entity_root),
-                            ),
-                            name: Name::new(bone.name.clone()),
-                            transform: Transform2D {
-                                translation: Vec2::new(bone.x, bone.y),
-                                rotation: bone.rotation,
-                                scale: Vec2::new(bone.scale_x, bone.scale_y),
-                                shear: Vec2::new(bone.shear_x, bone.shear_y),
-                            },
-                            ..Default::default()
-                        })
-                        .current_entity()
-                        .unwrap();
+            // world_builder.with_children(|world_builder| {
+            //     let mut bones_lookup: HashMap<String, Entity> = Default::default();
+            //     // TODO: Bone InheritTransform, length, color and shear
+            //     for bone in &spine.bones {
+            //         let entity = world_builder
+            //             .spawn(BoneBundle2D5 {
+            //                 parent: Parent(
+            //                     bone.parent
+            //                         .as_ref()
+            //                         .and_then(|parent_name| bones_lookup.get(parent_name))
+            //                         .copied()
+            //                         .unwrap_or_else(|| entity_root),
+            //                 ),
+            //                 name: Name::new(bone.name.clone()),
+            //                 transform: Transform2D {
+            //                     translation: Vec2::new(bone.x, bone.y),
+            //                     rotation: bone.rotation,
+            //                     scale: Vec2::new(bone.scale_x, bone.scale_y),
+            //                     shear: Vec2::new(bone.shear_x, bone.shear_y),
+            //                 },
+            //                 ..Default::default()
+            //             })
+            //             .current_entity()
+            //             .unwrap();
 
-                    bones_lookup.insert(bone.name.clone(), entity);
-                }
-            });
+            //         bones_lookup.insert(bone.name.clone(), entity);
+            //     }
+            // });
 
             Ok(())
         })

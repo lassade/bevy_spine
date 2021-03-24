@@ -18,7 +18,7 @@ pub fn local_to_world_2d5_system(
         (&Transform2D, &mut LocalToWorld),
         (Without<RootTransform2D>, With<Parent>),
     >,
-    parent_query: Query<&LocalToWorld, With<LocalToWorld>>,
+    parent_query: Query<&LocalToWorld, Without<Transform2D>>,
     changed_transform_query: Query<Entity, Changed<Transform2D>>,
     children_query: Query<Option<&Children>, (With<Parent>, With<LocalToWorld>)>,
 ) {

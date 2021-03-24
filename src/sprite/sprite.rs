@@ -2,7 +2,8 @@ use bevy::{
     asset::Asset,
     core::Bytes,
     prelude::*,
-    reflect::{Reflect, ReflectComponent, TypeUuid},
+    reflect::TypeUuid,
+    render::pipeline::PrimitiveTopology,
     render::{
         mesh::Indices,
         renderer::{RenderResource, RenderResourceType, RenderResources},
@@ -51,10 +52,10 @@ pub enum SpriteShape {
 impl Default for SpriteShape {
     fn default() -> Self {
         SpriteShape::Rect {
-            min: Vec2::zero(),
+            min: Vec2::ZERO,
             max: Vec2::splat(100.0),
             rotation: Rotation::None,
-            size: Vec2::one(),
+            size: Vec2::ONE,
             pivot: Vec2::splat(0.5),
             padding: None,
         }
@@ -105,7 +106,7 @@ fn rebuild_mesh(sprite: &mut Sprite, meshes: &mut Assets<Mesh>) {
 
     let mesh_target_handle = &*sprite
         .mesh
-        .get_or_insert_with(|| meshes.add(Mesh::default()));
+        .get_or_insert_with(|| meshes.add(Mesh::new(PrimitiveTopology::TriangleList)));
     let mesh_target = meshes.get_mut(mesh_target_handle).unwrap();
 
     match &mut sprite.shape {

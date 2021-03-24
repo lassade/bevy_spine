@@ -1,15 +1,26 @@
 use bevy::prelude::*;
 
-use super::{ChildOfTransform2D, LocalToWorld};
+use super::{ChildOfTransform2D, LocalToWorld, Transform2D};
 
 /// Propagate transform for [`Transform`]s that are children of [`Transform2D`](super::Transform2D)
 pub fn local_to_world_children_of_transform_2d_system(
     mut root_query: Query<
         (Entity, Option<&Children>, &Transform, &mut LocalToWorld),
-        (With<ChildOfTransform2D>, With<LocalToWorld>),
+        (
+            With<ChildOfTransform2D>,
+            With<LocalToWorld>,
+            Without<Transform2D>,
+        ),
     >,
-    mut transform_query: Query<(&Transform, &mut LocalToWorld), With<Parent>>,
-    parent_query: Query<&LocalToWorld, With<LocalToWorld>>,
+    mut transform_query: Query<
+        (&Transform, &mut LocalToWorld),
+        (
+            Without<ChildOfTransform2D>,
+            With<Parent>,
+            Without<Transform2D>,
+        ),
+    >,
+    parent_query: Query<&LocalToWorld, With<Transform2D>>,
     changed_transform_query: Query<Entity, Changed<Transform>>,
     children_query: Query<Option<&Children>, (With<Parent>, With<LocalToWorld>)>,
 ) {
@@ -43,7 +54,14 @@ pub fn local_to_world_children_of_transform_2d_system(
 fn propagate_recursive(
     parent: &LocalToWorld,
     changed_transform_query: &Query<Entity, Changed<Transform>>,
-    transform_query: &mut Query<(&Transform, &mut LocalToWorld), With<Parent>>,
+    transform_query: &mut Query<
+        (&Transform, &mut LocalToWorld),
+        (
+            Without<ChildOfTransform2D>,
+            With<Parent>,
+            Without<Transform2D>,
+        ),
+    >,
     children_query: &Query<Option<&Children>, (With<Parent>, With<LocalToWorld>)>,
     entity: Entity,
     mut changed: bool,
