@@ -16,6 +16,31 @@ pub struct LocalToWorld2D(pub Mat3);
 
 impl LocalToWorld2D {
     #[inline]
+    pub fn right_scaled(&self) -> Vec2 {
+        self.0.x_axis.into()
+    }
+
+    #[inline]
+    pub fn right(&self) -> Vec2 {
+        self.right_scaled().normalize()
+    }
+
+    #[inline]
+    pub fn up_scaled(&self) -> Vec2 {
+        self.0.y_axis.into()
+    }
+
+    #[inline]
+    pub fn up(&self) -> Vec2 {
+        self.up_scaled().normalize()
+    }
+
+    #[inline]
+    pub fn translation(&self) -> Vec2 {
+        self.0.z_axis.into()
+    }
+
+    #[inline]
     pub fn mul_transform(&self, transform: Transform2D) -> Self {
         LocalToWorld2D(self.0.mul_mat3(&transform.compute_matrix()))
     }

@@ -6,9 +6,6 @@ pub fn tagging_system(
     mut commands: Commands,
     root_query: Query<Entity, (Without<Parent>, Without<RootTransform2D>, With<Transform2D>)>,
     parent_query: Query<(Option<&Transform>, Option<&Transform2D>)>,
-    // TODO: Test perf with the queries bellow
-    // parent_query: Query<(), (Without<Transform>, With<Transform2D>)>,
-    // parent_query: Query<(), (With<Transform>, Without<Transform2D>)>,
     child_query: Query<Entity, (Changed<Parent>, With<Transform2D>)>,
     mixed_child_query: Query<Entity, (Changed<Parent>, With<Transform>)>,
 ) {
@@ -24,7 +21,7 @@ pub fn tagging_system(
             }
             Ok((None, Some(_))) => {
                 // `Transform2D` parent
-                commands.entity(entity).remove::<ChildOfTransform2D>();
+                commands.entity(entity).remove::<RootTransform2D>();
             }
             _ => {}
         }

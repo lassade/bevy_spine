@@ -14,14 +14,46 @@ use super::LocalToWorld2D;
 ///
 /// **WARNING** [`LocalToWorld`] is incompatible with [`GlobalTransform`],
 /// both will set the `"Transform"` uniform;
-///
-/// **WARNING** [`LocalToWorld`] can be a children of [`GlobalTransform`]
-/// but not the other way around;
 #[derive(Debug, PartialEq, Clone, Copy, Reflect)]
 #[reflect(Component)]
 pub struct LocalToWorld(pub Mat4);
 
 impl LocalToWorld {
+    #[inline]
+    pub fn right_scaled(&self) -> Vec3 {
+        self.0.x_axis.into()
+    }
+
+    #[inline]
+    pub fn right(&self) -> Vec3 {
+        self.right_scaled().normalize()
+    }
+
+    #[inline]
+    pub fn up_scaled(&self) -> Vec3 {
+        self.0.y_axis.into()
+    }
+
+    #[inline]
+    pub fn up(&self) -> Vec3 {
+        self.up_scaled().normalize()
+    }
+
+    #[inline]
+    pub fn forward_scaled(&self) -> Vec3 {
+        self.0.z_axis.into()
+    }
+
+    #[inline]
+    pub fn forward(&self) -> Vec3 {
+        self.forward_scaled().normalize()
+    }
+
+    #[inline]
+    pub fn translation(&self) -> Vec3 {
+        self.0.w_axis.into()
+    }
+
     #[inline]
     pub fn mul_transform(&self, transform: Transform) -> Self {
         LocalToWorld(self.0.mul_mat4(&transform.compute_matrix()))
@@ -113,3 +145,20 @@ impl RenderResource for LocalToWorld {
         None
     }
 }
+
+// #[cfg(test)]
+// mod tests {
+//     use bevy::prelude::Transform;
+
+//     #[test]
+//     fn inverse() {
+//         let trs = Transform::default();
+//         let inverse = Transform {
+//             translation: -trs.translation,
+//             rotation: trs.rotation.inverse(),
+//             scale: trs.scale.recip(),
+//         };
+
+//         panic!("{:?}", inverse.compute_matrix() * trs.compute_matrix());
+//     }
+// }
