@@ -24,7 +24,7 @@ impl LocalToWorld2D {
 impl Default for LocalToWorld2D {
     #[inline]
     fn default() -> Self {
-        Self(Mat3::identity())
+        Self(Mat3::IDENTITY)
     }
 }
 

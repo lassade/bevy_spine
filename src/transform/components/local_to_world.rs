@@ -31,7 +31,7 @@ impl LocalToWorld {
 impl Default for LocalToWorld {
     #[inline]
     fn default() -> Self {
-        Self(Mat4::identity())
+        Self(Mat4::IDENTITY)
     }
 }
 

@@ -101,7 +101,7 @@ impl Transform2D {
             .mul_mat2(&Mat2::from_scale_angle(self.scale, self.rotation));
         Mat3::from_cols(
             m.x_axis.extend(0.0),
-            m.x_axis.extend(0.0),
+            m.y_axis.extend(0.0),
             self.translation.extend(1.0),
         )
     }
