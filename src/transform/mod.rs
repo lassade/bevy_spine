@@ -5,6 +5,7 @@ use bevy::{
 };
 
 mod components;
+mod entity;
 mod local_to_world_2d5_system;
 mod local_to_world_2d_system;
 mod local_to_world_children_of_transform_2d_system;
@@ -12,6 +13,7 @@ mod local_to_world_system;
 mod tagging_system;
 
 pub use components::*;
+pub use entity::*;
 
 pub mod node {
     pub const LOCAL_TO_WORLD: &str = "local_to_world";

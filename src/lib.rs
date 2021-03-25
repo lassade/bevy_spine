@@ -15,13 +15,14 @@ pub mod transform;
 pub use entity::*;
 use spine::Atlas;
 use sprite::{Rotation, Sprite, SpriteShape};
-use transform::Transform2D;
+use transform::{Transform2D, TransformBundle};
 
 // TODO: PluginsGroup our something like that
 
 pub struct SpineImpoter;
 
 const EXTENSIONS: &'static [&'static str] = &["spine_json"];
+
 impl AssetLoader for SpineImpoter {
     fn load<'a>(
         &'a self,
@@ -104,39 +105,41 @@ impl AssetLoader for SpineImpoter {
                 todo!("unpacked sprites")
             }
 
-            // let mut world = World::default();
-            // let world_builder = &mut world.build();
+            let mut world = World::default();
+            world
+                .spawn()
+                .insert_bundle(TransformBundle::default())
+                .with_children(|world_builder| {
+                    let mut bones_lookup: HashMap<String, Entity> = Default::default();
+                    let root = world_builder.parent_entity();
+                    // TODO: Missing bone InheritTransform, length and color
+                    for bone in &spine.bones {
+                        let entity = world_builder
+                            .spawn()
+                            .insert_bundle(BoneBundle2D5 {
+                                parent: Parent(
+                                    bone.parent
+                                        .as_ref()
+                                        .and_then(|parent_name| bones_lookup.get(parent_name))
+                                        .copied()
+                                        .unwrap_or_else(|| root),
+                                ),
+                                name: Name::new(bone.name.clone()),
+                                transform: Transform2D {
+                                    translation: Vec2::new(bone.x, bone.y),
+                                    rotation: bone.rotation,
+                                    scale: Vec2::new(bone.scale_x, bone.scale_y),
+                                    shear: Vec2::new(bone.shear_x, bone.shear_y),
+                                },
+                                ..Default::default()
+                            })
+                            .id();
 
-            // let entity_root = world_builder.spawn(()).current_entity().unwrap();
+                        bones_lookup.insert(bone.name.clone(), entity);
+                    }
+                });
 
-            // world_builder.with_children(|world_builder| {
-            //     let mut bones_lookup: HashMap<String, Entity> = Default::default();
-            //     // TODO: Bone InheritTransform, length, color and shear
-            //     for bone in &spine.bones {
-            //         let entity = world_builder
-            //             .spawn(BoneBundle2D5 {
-            //                 parent: Parent(
-            //                     bone.parent
-            //                         .as_ref()
-            //                         .and_then(|parent_name| bones_lookup.get(parent_name))
-            //                         .copied()
-            //                         .unwrap_or_else(|| entity_root),
-            //                 ),
-            //                 name: Name::new(bone.name.clone()),
-            //                 transform: Transform2D {
-            //                     translation: Vec2::new(bone.x, bone.y),
-            //                     rotation: bone.rotation,
-            //                     scale: Vec2::new(bone.scale_x, bone.scale_y),
-            //                     shear: Vec2::new(bone.shear_x, bone.shear_y),
-            //                 },
-            //                 ..Default::default()
-            //             })
-            //             .current_entity()
-            //             .unwrap();
-
-            //         bones_lookup.insert(bone.name.clone(), entity);
-            //     }
-            // });
+            // TODO: Create scene here
 
             Ok(())
         })
