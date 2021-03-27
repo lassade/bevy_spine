@@ -53,11 +53,6 @@ impl LocalToWorld {
     pub fn translation(&self) -> Vec3 {
         self.0.w_axis.into()
     }
-
-    #[inline]
-    pub fn mul_transform(&self, transform: Transform) -> Self {
-        LocalToWorld(self.0.mul_mat4(&transform.compute_matrix()))
-    }
 }
 
 impl Default for LocalToWorld {

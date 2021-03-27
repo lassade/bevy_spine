@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-pub use super::{ChildOfTransform2D, RootTransform2D, Transform2D};
+use super::{ChildOfTransform2D, RootTransform2D, Transform2D};
 
 pub fn transform_tagging_system(
     mut commands: Commands,

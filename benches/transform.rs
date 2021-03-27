@@ -44,7 +44,7 @@ fn cmp(c: &mut Criterion) {
         b.iter(|| black_box(data.mul_vec3(Vec3::ONE)))
     });
     group.bench_with_input("mat4", &mat, |b, data| {
-        b.iter(|| black_box(data.mul_vec4(Vec4::ONE)))
+        b.iter(|| black_box(data.transform_point3(Vec3::ONE)))
     });
     group.warm_up_time(WARM_UP_TIME);
     group.measurement_time(MEASUREMENT_TIME);

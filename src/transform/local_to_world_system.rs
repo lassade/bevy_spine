@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 
-use super::components::{ChildOfTransform2D, DontPropagateTransform, LocalToWorld, Shear};
+use super::components::{
+    ChildOfTransform2D, DontPropagateTransform, LocalToWorld, Shear, TransformPropagationConstraint,
+};
 
 /// Uses the local [`Transform`] to update [`LocalToWorld`] matrices, analogue to the
 /// [`transform_propagate_system`](bevy::transform::transform_propagate_system) system function.
@@ -21,11 +23,19 @@ pub fn local_to_world_system(
             &Transform,
             Option<&Shear>,
             Option<&DontPropagateTransform>,
+            Option<&TransformPropagationConstraint>,
             &mut LocalToWorld,
         ),
         With<Parent>,
     >,
-    changed_transform_query: Query<Entity, Changed<Transform>>,
+    changed_transform_query: Query<
+        Entity,
+        Or<(
+            Changed<Transform>,
+            Added<DontPropagateTransform>,
+            Changed<TransformPropagationConstraint>,
+        )>,
+    >,
     children_query: Query<
         Option<&Children>,
         (
@@ -68,12 +78,20 @@ pub fn local_to_world_system(
 
 fn propagate_recursive(
     parent: &LocalToWorld,
-    changed_transform_query: &Query<Entity, Changed<Transform>>,
+    changed_transform_query: &Query<
+        Entity,
+        Or<(
+            Changed<Transform>,
+            Added<DontPropagateTransform>,
+            Changed<TransformPropagationConstraint>,
+        )>,
+    >,
     transform_query: &mut Query<
         (
             &Transform,
             Option<&Shear>,
             Option<&DontPropagateTransform>,
+            Option<&TransformPropagationConstraint>,
             &mut LocalToWorld,
         ),
         With<Parent>,
@@ -92,16 +110,28 @@ fn propagate_recursive(
     changed |= changed_transform_query.get(entity).is_ok();
 
     let global_matrix = {
-        if let Ok((transform, shear, propagate, mut global_transform)) =
+        if let Ok((transform, shear, propagate, constraint, mut global_transform)) =
             transform_query.get_mut(entity)
         {
             if changed {
-                *global_transform = parent.mul_transform(*transform);
+                let mut local_transform = LocalToWorld::from(*transform);
+
+                // Apply shear
                 if let Some(shear) = shear {
-                    global_transform.0 = shear.compute_matrix() * global_transform.0;
+                    local_transform.0 = shear.compute_matrix() * local_transform.0;
                 }
+
+                // Apply propagation constraint
+                let mut parent = *parent;
+                if let Some(constraint) = constraint {
+                    constraint.constrain(&mut parent.0);
+                }
+
+                // Calculate the final matrix
+                *global_transform = parent * local_transform;
             }
 
+            // Decide if propagate or not
             if propagate.is_some() {
                 return;
             }

@@ -7,6 +7,7 @@ use bevy::{
     utils::HashMap,
 };
 
+pub mod constraints;
 mod entity;
 pub mod spine;
 pub mod sprite;

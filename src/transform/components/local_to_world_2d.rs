@@ -7,7 +7,7 @@ use bevy::{
     },
 };
 
-use super::Transform2D;
+use super::{LocalToWorld, Transform2D};
 
 /// 2D analogue of [`LocalToWorld`](super::LocalToWorld)
 #[derive(Debug, PartialEq, Clone, Copy, Reflect)]
@@ -66,6 +66,17 @@ impl From<Mat3> for LocalToWorld2D {
     #[inline]
     fn from(value: Mat3) -> Self {
         Self(value)
+    }
+}
+
+impl From<LocalToWorld> for LocalToWorld2D {
+    #[inline]
+    fn from(value: LocalToWorld) -> Self {
+        LocalToWorld2D(Mat3::from_cols(
+            Vec2::from(value.0.x_axis).extend(0.0),
+            Vec2::from(value.0.y_axis).extend(0.0),
+            Vec2::from(value.0.w_axis).extend(1.0),
+        ))
     }
 }
 
