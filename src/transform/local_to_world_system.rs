@@ -1,15 +1,30 @@
 use bevy::prelude::*;
 
-use super::components::{ChildOfTransform2D, LocalToWorld};
+use super::components::{ChildOfTransform2D, DontPropagateTransform, LocalToWorld, Shear};
 
 /// Uses the local [`Transform`] to update [`LocalToWorld`] matrices, analogue to the
 /// [`transform_propagate_system`](bevy::transform::transform_propagate_system) system function.
 pub fn local_to_world_system(
     mut root_query: Query<
-        (Entity, Option<&Children>, &Transform, &mut LocalToWorld),
+        (
+            Entity,
+            Option<&Children>,
+            Option<&DontPropagateTransform>,
+            &Transform,
+            Option<&Shear>,
+            &mut LocalToWorld,
+        ),
         (Without<Parent>, With<LocalToWorld>),
     >,
-    mut transform_query: Query<(&Transform, &mut LocalToWorld), With<Parent>>,
+    mut transform_query: Query<
+        (
+            &Transform,
+            Option<&Shear>,
+            Option<&DontPropagateTransform>,
+            &mut LocalToWorld,
+        ),
+        With<Parent>,
+    >,
     changed_transform_query: Query<Entity, Changed<Transform>>,
     children_query: Query<
         Option<&Children>,
@@ -20,11 +35,20 @@ pub fn local_to_world_system(
         ),
     >,
 ) {
-    for (entity, children, transform, mut global_transform) in root_query.iter_mut() {
+    for (entity, children, propagate, transform, shear, mut global_transform) in
+        root_query.iter_mut()
+    {
         let mut changed = false;
         if changed_transform_query.get(entity).is_ok() {
             *global_transform = LocalToWorld::from(*transform);
+            if let Some(shear) = shear {
+                global_transform.0 = shear.compute_matrix() * global_transform.0;
+            }
             changed = true;
+        }
+
+        if propagate.is_some() {
+            continue;
         }
 
         if let Some(children) = children {
@@ -45,7 +69,15 @@ pub fn local_to_world_system(
 fn propagate_recursive(
     parent: &LocalToWorld,
     changed_transform_query: &Query<Entity, Changed<Transform>>,
-    transform_query: &mut Query<(&Transform, &mut LocalToWorld), With<Parent>>,
+    transform_query: &mut Query<
+        (
+            &Transform,
+            Option<&Shear>,
+            Option<&DontPropagateTransform>,
+            &mut LocalToWorld,
+        ),
+        With<Parent>,
+    >,
     children_query: &Query<
         Option<&Children>,
         (
@@ -60,10 +92,20 @@ fn propagate_recursive(
     changed |= changed_transform_query.get(entity).is_ok();
 
     let global_matrix = {
-        if let Ok((transform, mut global_transform)) = transform_query.get_mut(entity) {
+        if let Ok((transform, shear, propagate, mut global_transform)) =
+            transform_query.get_mut(entity)
+        {
             if changed {
                 *global_transform = parent.mul_transform(*transform);
+                if let Some(shear) = shear {
+                    global_transform.0 = shear.compute_matrix() * global_transform.0;
+                }
             }
+
+            if propagate.is_some() {
+                return;
+            }
+
             *global_transform
         } else {
             return;

@@ -2,6 +2,9 @@ use bevy::prelude::*;
 
 use super::components::{ChildOfTransform2D, LocalToWorld2D, Transform2D};
 
+// TODO: DontPropagateTransform
+// TODO: Because of the tagging system recently spawned entities will have a 1 frame delay before been updated
+
 /// Uses the local [`Transform2D`] to update [`LocalToWorld2D`] matrices, analogue to the
 /// [`transform_propagate_system`](bevy::transform::transform_propagate_system) system function but for used for 2D only.
 pub fn local_to_world_2d_system(

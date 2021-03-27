@@ -2,6 +2,9 @@ use bevy::prelude::*;
 
 use super::{ChildOfTransform2D, LocalToWorld, Transform2D};
 
+// TODO: DontPropagateTransform
+// TODO: Because of the tagging system these objects may have a 1 frame delay to update
+
 /// Propagate transform for [`Transform`]s that are children of [`Transform2D`](super::Transform2D)
 pub fn local_to_world_children_of_transform_2d_system(
     mut root_query: Query<

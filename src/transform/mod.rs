@@ -10,7 +10,7 @@ mod local_to_world_2d5_system;
 mod local_to_world_2d_system;
 mod local_to_world_children_of_transform_2d_system;
 mod local_to_world_system;
-mod tagging_system;
+mod transform_tagging_system;
 
 pub use components::*;
 pub use entity::*;
@@ -25,7 +25,7 @@ pub mod systems {
     pub use super::local_to_world_2d_system::*;
     pub use super::local_to_world_children_of_transform_2d_system::*;
     pub use super::local_to_world_system::*;
-    pub use super::tagging_system::*;
+    pub use super::transform_tagging_system::*;
 }
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemLabel)]
@@ -93,7 +93,7 @@ impl Plugin for Transform2D5Plugin {
         // Transform
         app.add_startup_system_to_stage(
             StartupStage::PostStartup,
-            systems::tagging_system
+            systems::transform_tagging_system
                 .system()
                 .label(Transform2D5System::Tagging)
                 .after(TransformSystem::ParentUpdate),
@@ -121,7 +121,7 @@ impl Plugin for Transform2D5Plugin {
         )
         .add_system_to_stage(
             CoreStage::PostUpdate,
-            systems::tagging_system
+            systems::transform_tagging_system
                 .system()
                 .label(Transform2D5System::Tagging)
                 .after(TransformSystem::ParentUpdate),

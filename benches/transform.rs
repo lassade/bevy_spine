@@ -13,7 +13,7 @@ const LEN: usize = 1_000_000;
 const WARM_UP_TIME: Duration = Duration::from_secs(1);
 const MEASUREMENT_TIME: Duration = Duration::from_secs(5);
 
-use bevy::prelude::{GlobalTransform, Mat4, Quat, Transform, Vec3, Vec4};
+use bevy::prelude::{GlobalTransform, Mat3, Mat4, Quat, Transform, Vec3, Vec4};
 
 fn cmp(c: &mut Criterion) {
     let core_ids = core_affinity::get_core_ids().unwrap();
@@ -28,7 +28,7 @@ fn cmp(c: &mut Criterion) {
 
     let mat = trs.compute_matrix();
 
-    let mut group = c.benchmark_group("conv");
+    let mut group = c.benchmark_group("conversion");
     group.bench_with_input("to_mat4", &trs, |b, data| {
         b.iter(|| black_box(data.compute_matrix()))
     });
@@ -68,7 +68,7 @@ fn cmp(c: &mut Criterion) {
     group.measurement_time(MEASUREMENT_TIME);
     group.finish();
 
-    let mut group = c.benchmark_group("mul");
+    let mut group = c.benchmark_group("transform_propagation");
     group.bench_with_input("trs", &trs, |b, data| {
         b.iter(|| black_box(data.mul_transform(*data)))
     });
@@ -79,12 +79,23 @@ fn cmp(c: &mut Criterion) {
     group.measurement_time(MEASUREMENT_TIME);
     group.finish();
 
-    let mut group = c.benchmark_group("dir");
+    let mut group = c.benchmark_group("right_up_forward");
     group.bench_with_input("trs", &trs, |b, data| {
         b.iter(|| black_box(data.rotation * Vec3::X))
     });
     group.bench_with_input("mat4", &mat, |b, data| {
         b.iter(|| black_box(Vec3::from(data.x_axis).normalize()))
+    });
+    group.warm_up_time(WARM_UP_TIME);
+    group.measurement_time(MEASUREMENT_TIME);
+    group.finish();
+
+    let mut group = c.benchmark_group("any_direction");
+    group.bench_with_input("trs", &trs, |b, data| {
+        b.iter(|| black_box(data.rotation * Vec3::X))
+    });
+    group.bench_with_input("mat4", &mat, |b, data| {
+        b.iter(|| black_box(data.transform_vector3(Vec3::X)))
     });
     group.warm_up_time(WARM_UP_TIME);
     group.measurement_time(MEASUREMENT_TIME);
