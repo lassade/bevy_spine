@@ -72,8 +72,8 @@ fn cmp(c: &mut Criterion) {
     group.bench_with_input("trs", &trs, |b, data| {
         b.iter(|| black_box(data.mul_transform(*data)))
     });
-    group.bench_with_input("mat4", &mat, |b, data| {
-        b.iter(|| black_box((*data) * (*data)))
+    group.bench_with_input("mat4", &(mat, trs), |b, (mat, trs)| {
+        b.iter(|| black_box((*mat) * trs.compute_matrix()))
     });
     group.warm_up_time(WARM_UP_TIME);
     group.measurement_time(MEASUREMENT_TIME);
