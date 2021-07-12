@@ -47,9 +47,9 @@ impl<'a> From<&'a mut Mesh> for MeshEditXU<'a> {
                 vertices: mesh_attr!(
                     mesh,
                     Mesh::ATTRIBUTE_POSITION,
-                    VertexAttributeValues::Float2
+                    VertexAttributeValues::Float32x2
                 ),
-                uvs: mesh_attr!(mesh, Mesh::ATTRIBUTE_UV_0, VertexAttributeValues::Float2),
+                uvs: mesh_attr!(mesh, Mesh::ATTRIBUTE_UV_0, VertexAttributeValues::Float32x2),
                 indices: mesh_index!(mesh, Indices::U32),
                 _mesh: mesh,
             }
