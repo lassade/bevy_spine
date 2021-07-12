@@ -13,7 +13,10 @@ const LEN: usize = 1_000_000;
 const WARM_UP_TIME: Duration = Duration::from_secs(1);
 const MEASUREMENT_TIME: Duration = Duration::from_secs(5);
 
-use bevy::prelude::{GlobalTransform, Mat3, Mat4, Quat, Transform, Vec3, Vec4};
+use bevy::{
+    math::EulerRot,
+    prelude::{GlobalTransform, Mat3, Mat4, Quat, Transform, Vec3, Vec4},
+};
 
 fn cmp(c: &mut Criterion) {
     let core_ids = core_affinity::get_core_ids().unwrap();
@@ -22,7 +25,7 @@ fn cmp(c: &mut Criterion) {
     let mut rng = rand::thread_rng();
     let trs = Transform {
         translation: Vec3::new(rng.gen(), rng.gen(), rng.gen()),
-        rotation: Quat::from_rotation_ypr(rng.gen(), rng.gen(), rng.gen()),
+        rotation: Quat::from_euler(EulerRot::YXZ, rng.gen(), rng.gen(), rng.gen()),
         scale: Vec3::new(rng.gen(), rng.gen(), rng.gen()),
     };
 

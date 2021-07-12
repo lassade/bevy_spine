@@ -22,12 +22,14 @@ fn main() {
 }
 
 fn setup(
-    commands: &mut Commands,
+    mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut available_sprites: ResMut<AvailableSprites>,
     mut sprites: ResMut<Assets<Sprite>>,
 ) {
-    commands.spawn(OrthographicCameraBundle::new_2d());
+    commands
+        .spawn()
+        .insert_bundle(OrthographicCameraBundle::new_2d());
     // commands.spawn(SpriteBundle {
     //     sprite: atlas_sprites[1].clone(),
     //     ..Default::default()
